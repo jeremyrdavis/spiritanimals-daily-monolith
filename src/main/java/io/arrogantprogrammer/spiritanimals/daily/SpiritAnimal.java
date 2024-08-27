@@ -6,5 +6,5 @@ import jakarta.persistence.Entity;
 @Entity
 public class SpiritAnimal extends PanacheEntity {
 
-    String name;
+    protected String name;
 }

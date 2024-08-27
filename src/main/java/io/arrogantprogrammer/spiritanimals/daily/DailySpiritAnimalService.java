@@ -4,11 +4,12 @@ import io.arrogantprogrammer.spiritanimals.daily.api.DailySpiritAnimalRecord;
 import jakarta.enterprise.context.ApplicationScoped;
 import io.quarkus.logging.Log;
 import jakarta.annotation.PostConstruct;
+import jakarta.inject.Inject;
+import jakarta.transaction.Transactional;
 
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
 
     @ApplicationScoped
@@ -16,14 +17,20 @@ public class DailySpiritAnimalService {
 
     private List<String> animalNames = new ArrayList<>();
 
+    @Inject
+    DailySpiritAnimalRepository dailySpiritAnimalRepository;
+
+    @Transactional
     public DailySpiritAnimalRecord assignSpiritAnimal(String name) {
-        return new DailySpiritAnimalRecord(name, getAnimalName(), getFormattedTodaysDate());
+        Log.debugf("Assigning spirit animal for {}", name);
+        DailySpiritAnimal dailySpiritAnimal = new DailySpiritAnimal(name, getAnimalName(), LocalDate.now());
+        dailySpiritAnimalRepository.persist(dailySpiritAnimal);
+        return new DailySpiritAnimalRecord(dailySpiritAnimal.name, dailySpiritAnimal.getSpiritAnimal(), formatDate(dailySpiritAnimal.getDate()));
     }
 
-    public static String getFormattedTodaysDate() {
-        LocalDate today = LocalDate.now();
+    private static String formatDate(final LocalDate date) {
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("MM-dd-yyyy");
-        return today.format(formatter);
+        return date.format(formatter);
     }
 
     public String getAnimalName() {
